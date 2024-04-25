@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -90,10 +91,14 @@ public class AuthorizationSecurityConfig {
 		FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
 				.oauth2UserHandler(new UserRepositoryOAuth2UserHandler(googleUserRepository));
 		http.authorizeHttpRequests(
-				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login", "/h2-ui/**").permitAll()
+				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login","/h2-ui", "/h2-ui/**").permitAll()
 						.anyRequest().authenticated())
 				.formLogin(Customizer.withDefaults()).apply(federatedIdentityConfigurer);
-		http.csrf().ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**");
+		//http.csrf().ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**");
+		http.csrf(csrf -> csrf
+	            .ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui")
+	            .disable());
+		http.headers(headers -> headers.frameOptions(FrameOptionsConfig::disable));
 		return http.build();
 	}
 

@@ -1,4 +1,4 @@
-package backend.joffre.dtio;
+package backend.joffre.dto;
 
 import java.util.List;
 

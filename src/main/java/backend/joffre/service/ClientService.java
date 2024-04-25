@@ -7,8 +7,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.stereotype.Service;
 
-import backend.joffre.dtio.CreateClientDto;
-import backend.joffre.dtio.MessageDto;
+import backend.joffre.dto.CreateClientDto;
+import backend.joffre.dto.MessageDto;
 import backend.joffre.entity.Client;
 import backend.joffre.repository.ClientRepository;
 

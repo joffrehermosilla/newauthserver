@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import backend.joffre.dtio.CreateAppUserDto;
-import backend.joffre.dtio.MessageDto;
+import backend.joffre.dto.CreateAppUserDto;
+import backend.joffre.dto.MessageDto;
 import backend.joffre.entity.AppUser;
 import backend.joffre.entity.Role;
 import backend.joffre.enums.RoleName;
