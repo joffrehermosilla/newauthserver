@@ -67,7 +67,7 @@ public class AuthorizationSecurityConfig {
 
 	// private final PasswordEncoder passwordEncoder;
 	// private final ClientService clientService;
-
+	@Autowired
 	private GoogleUserRepository googleUserRepository;
 
 	private static final String CUSTOM_CONSENT_PAGE = "/oauth2/consent";
@@ -91,13 +91,11 @@ public class AuthorizationSecurityConfig {
 		FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
 				.oauth2UserHandler(new UserRepositoryOAuth2UserHandler(googleUserRepository));
 		http.authorizeHttpRequests(
-				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login","/h2-ui", "/h2-ui/**").permitAll()
-						.anyRequest().authenticated())
+				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login", "/h2-ui", "/h2-ui/**")
+						.permitAll().anyRequest().authenticated())
 				.formLogin(Customizer.withDefaults()).apply(federatedIdentityConfigurer);
-		//http.csrf().ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**");
-		http.csrf(csrf -> csrf
-	            .ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui")
-	            .disable());
+		// http.csrf().ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**");
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui").disable());
 		http.headers(headers -> headers.frameOptions(FrameOptionsConfig::disable));
 		return http.build();
 	}

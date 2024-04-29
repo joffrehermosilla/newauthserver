@@ -41,10 +41,13 @@ public class AuthController {
 	public void creatRole() {
 		Role adminRole = Role.builder().role(RoleName.ROLE_ADMIN).build();
 		Role userRole = Role.builder().role(RoleName.ROLE_USER).build();
+		// Role oidcRole = Role.builder().role(RoleName.OIDC_USER).build();
 		repository.save(adminRole);
 		repository.save(userRole);
+		// repository.save(oidcRole);
 		List<String> roleuser = new ArrayList<>();
 		roleuser.add("ROLE_USER");
+
 		List<String> roleadmin = new ArrayList<>();
 		roleadmin.add("ROLE_ADMIN");
 		roleadmin.add("ROLE_USER");
