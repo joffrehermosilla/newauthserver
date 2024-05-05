@@ -37,14 +37,19 @@ public class Client {
 	private boolean requireProofKey;
 
 	public static RegisteredClient toRegisteredClient(Client client) {
-		RegisteredClient.Builder builder = RegisteredClient.withId(client.getClientId()).clientId(client.getClientId())
-				.clientSecret(client.getClientSecret()).clientIdIssuedAt(new Date().toInstant())
+		RegisteredClient.Builder builder = RegisteredClient.withId(client.getClientId())
+				.clientId(client.getClientId())
+				.clientSecret(client.getClientSecret())
+				.clientIdIssuedAt(new Date().toInstant())
 				.clientAuthenticationMethods(am -> am.addAll(client.getAuthenticationMethods()))
 				.authorizationGrantTypes(agt -> agt.addAll(client.getAuthorizationGrantTypes()))
 				.redirectUris(ru -> ru.addAll(client.getRedirectUris()))
 				.postLogoutRedirectUris(pl -> pl.addAll(client.getPostLogoutRedirectUris()))
-				.scopes(sc -> sc.addAll(client.getScopes())).clientSettings(ClientSettings.builder()
-						.requireProofKey(client.isRequireProofKey()).requireAuthorizationConsent(true).build());
+				.scopes(sc -> sc.addAll(client.getScopes()))
+				.clientSettings(ClientSettings.builder()
+						.requireProofKey(client.isRequireProofKey())
+						.requireAuthorizationConsent(true)
+						.build());
 		return builder.build();
 	}
 

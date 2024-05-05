@@ -64,23 +64,29 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthorizationSecurityConfig {
-
 	// private final PasswordEncoder passwordEncoder;
 	// private final ClientService clientService;
-	@Autowired
-	private GoogleUserRepository googleUserRepository;
+	private final GoogleUserRepository googleUserRepository;
 
-	private static final String CUSTOM_CONSENT_PAGE = "/oauth2/consent";
-
+    private static final String CUSTOM_CONSENT_PAGE = "/oauth2/consent";
+    
+    
 	@Bean
 	@Order(1)
 	public SecurityFilterChain authSecurityFilterChain(HttpSecurity http) throws Exception {
 		http.cors(Customizer.withDefaults());
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**"));
 		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class).oidc(Customizer.withDefaults()); // Enable OpenID
-																										// Connect 1.0
-		http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
-		http.apply(new FederatedIdentityConfigurer());
+		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+				.authorizationEndpoint(auth -> auth.consentPage(CUSTOM_CONSENT_PAGE))
+
+				.oidc(Customizer.withDefaults()); // Enable OpenID Connect 1.0
+		http.oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
+		http.exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
+				new LoginUrlAuthenticationEntryPoint("/login"), new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+				.oauth2ResourceServer(resource -> resource.jwt(Customizer.withDefaults()));
+
+		http.headers(headers -> headers.frameOptions(FrameOptionsConfig::disable));
 		return http.build();
 	}
 
@@ -88,16 +94,23 @@ public class AuthorizationSecurityConfig {
 	@Order(2)
 	public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
 		http.cors(Customizer.withDefaults());
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/client/**"));
 		FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
 				.oauth2UserHandler(new UserRepositoryOAuth2UserHandler(googleUserRepository));
 		http.authorizeHttpRequests(
 				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login", "/h2-ui", "/h2-ui/**")
 						.permitAll().anyRequest().authenticated())
-				.formLogin(Customizer.withDefaults()).apply(federatedIdentityConfigurer);
-		// http.csrf().ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui/**");
+				.formLogin(login -> login.loginPage("/login"))
+				.oauth2Login(login -> login.loginPage("/login").successHandler(authenticationSuccessHandler()))
+				.apply(federatedIdentityConfigurer);
+		http.logout(logout -> logout.logoutSuccessUrl("http://127.0.0.1:4200/logout"));
 		http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/client/**", "/h2-ui").disable());
 		http.headers(headers -> headers.frameOptions(FrameOptionsConfig::disable));
 		return http.build();
+	}
+
+	private AuthenticationSuccessHandler authenticationSuccessHandler() {
+		return new FederatedIdentityAuthenticationSuccessHandler();
 	}
 
 	/*
@@ -155,10 +168,10 @@ public class AuthorizationSecurityConfig {
 		return new InMemoryOAuth2AuthorizationService();
 	}
 
-	@Bean
-	public OAuth2AuthorizationConsentService authorizationConsentService() {
-		return new InMemoryOAuth2AuthorizationConsentService();
-	}
+	/*
+	 * @Bean public OAuth2AuthorizationConsentService authorizationConsentService()
+	 * { return new InMemoryOAuth2AuthorizationConsentService(); }
+	 */
 
 	@Bean
 	public AuthorizationServerSettings authorizationServerSettings() {
