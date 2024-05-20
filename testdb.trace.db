@@ -2200,3 +2200,9 @@ Caused by: org.h2.jdbc.JdbcSQLNonTransientConnectionException: The connection wa
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:690)
 	at org.h2.message.DbException.getJdbcSQLException(DbException.java:489)
 	... 16 more
+2024-05-05 19:10:17.759638-05:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "[*]CLIENT_AUTHENTICATION_METHODS"; expected "COMMIT, CREATE, CALL, CHECKPOINT, COMMENT"; SQL statement:
+CLIENT_AUTHENTICATION_METHODS [42001-224]
+2024-05-18 21:59:44.207159-05:00 jdbc[13]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CLIENT_POST_LOGOUT_REDIRECT_URISCLIENT_REDIRECT_URIS" not found; SQL statement:
+SELECT * FROM CLIENT_POST_LOGOUT_REDIRECT_URISCLIENT_REDIRECT_URIS [42102-224]

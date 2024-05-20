@@ -51,6 +51,9 @@ import backend.joffre.federated.FederatedIdentityConfigurer;
 import backend.joffre.federated.UserRepositoryOAuth2UserHandler;
 import backend.joffre.repository.GoogleUserRepository;
 import backend.joffre.service.ClientService;
+import backend.joffre.twofactor.TwoFactorHandler;
+import backend.joffre.twofactor.TwoFactorService;
+
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -59,6 +62,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -92,15 +98,21 @@ public class AuthorizationSecurityConfig {
 
 	@Bean
 	@Order(2)
-	public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain webSecurityFilterChain(HttpSecurity http, TwoFactorService twoFactorService) throws Exception {
 		http.cors(Customizer.withDefaults());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers("/auth/**", "/client/**"));
 		FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
 				.oauth2UserHandler(new UserRepositoryOAuth2UserHandler(googleUserRepository));
 		http.authorizeHttpRequests(
 				authorize -> authorize.requestMatchers("/auth/**", "/client/**", "/login", "/h2-ui", "/h2-ui/**")
-						.permitAll().anyRequest().authenticated())
-				.formLogin(login -> login.loginPage("/login"))
+						.permitAll()
+						
+						 .requestMatchers("/twofactor").hasAuthority("ROLE_TWO_F")
+						.anyRequest().authenticated())
+				.formLogin(login -> login.loginPage("/login")
+					      .successHandler(new TwoFactorHandler(twoFactorService))
+	                        .failureHandler(new SimpleUrlAuthenticationFailureHandler("/login?error"))
+						)
 				.oauth2Login(login -> login.loginPage("/login").successHandler(authenticationSuccessHandler()))
 				.apply(federatedIdentityConfigurer);
 		http.logout(logout -> logout.logoutSuccessUrl("http://127.0.0.1:4200/logout"));
